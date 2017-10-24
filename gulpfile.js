@@ -3,6 +3,7 @@ const gulp = require('gulp'),
     babel = require("gulp-babel"),
     uglify = require('gulp-uglify'),
     cleanCSS = require('gulp-clean-css'),
+    rename = require("gulp-rename"),
     autoprefixer = require('gulp-autoprefixer');
 
 const autoprefixerOptions = {
@@ -47,7 +48,7 @@ gulp.task('project:watch', function () {
     //BrowserSync monitors the directory defined in baseDir and whenever we run the command, the page reloads.
     browserSync.init({
         server: {
-            baseDir: "./src"
+            baseDir: "./"
         }
     });
 
@@ -55,7 +56,7 @@ gulp.task('project:watch', function () {
     gulp.watch('./src/**/*.js', ['babel']);
     gulp.watch(
         [
-            './src/*.html', 
+            './*.html', 
             './src/**/*.css', 
             './src/**/*.js'
         ]
