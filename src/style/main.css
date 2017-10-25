@@ -11,9 +11,31 @@
 }
 
 .box {
-    transition: 1s all;
+    transition: .1s all;
+    border-radius: 50%;
 }
 
 .box:hover {
     background: black;
+}
+
+.settings {
+    position: fixed;
+    left: 0;
+    right: 0;
+    top: 0;
+    z-index: 999;
+    background: rgba(0, 0, 0, 0.6);
+    padding: 15px 0;
+}
+
+.settings__container {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    width: 60%;
+    margin: 0 auto;
+}
+
+.settings__container__slider__title, .settings__container__slider__value {
+    color: #fff;
 }
