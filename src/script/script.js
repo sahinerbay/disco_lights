@@ -39,7 +39,7 @@ let dom = function () {
 
     let interval;
 
-    let changeColor = (numberOfCells, speed = 50) => {
+    let changeColor = (numberOfCells, speed) => {
         interval = setInterval(() => {
             let box = getElement('box', Math.floor(Math.random() * numberOfCells));
             setBackgroundColor(box, getRandomColor());
@@ -125,7 +125,7 @@ let gap = {
         type: 'range',
         min: 1,
         max: 100,
-        value: 10
+        value: 1
     },
     cssStyleRule: 2
 };
@@ -151,7 +151,7 @@ let speed = {
         type: 'range',
         min: 1,
         max: 100,
-        value: 10
+        value: 50
     }
 };
 
@@ -183,7 +183,7 @@ let slider = function (obj) {
 
     if (obj.classname === 'cells') {
         sliderInput.addEventListener('input', function () {
-
+            showValue.textContent = `value: ${this.value}`;
             let sliderSpeed = dom.getElement('settings__container__speed__input', 0);
             dom.clearInterval();
             dom.removeAllChildren(container);
@@ -192,8 +192,8 @@ let slider = function (obj) {
         });
     } else if (obj.classname === 'speed') {
         sliderInput.addEventListener('input', function () {
+            showValue.textContent = `value: ${this.value}`;
             let sliderCells = dom.getElement('settings__container__cells__input', 0);
-            console.log(sliderCells.value)
             dom.clearInterval();
             dom.changeColor(sliderCells.value, this.value);
         });
@@ -210,7 +210,7 @@ let slider = function (obj) {
                     cssValue = `${this.value}px ${this.value}px`;
                     break;
                 case 'borderRadius':
-                    cssValue = `${this.value}%`;
+                    cssValue = `${this.value/2}%`;
                     break;
             }
             document.styleSheets[0].rules[obj.cssStyleRule].style[obj.classname] = cssValue;
@@ -218,9 +218,10 @@ let slider = function (obj) {
     }
 };
 
-let initialCells = 50;
+let initialCells = 50,
+    initialSpeed = 50;
 createBox(initialCells);
-dom.changeColor(container.children.length, initialCells);
+dom.changeColor(container.children.length, initialSpeed);
 
 slider(transition);
 slider(cells);

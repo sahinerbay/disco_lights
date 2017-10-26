@@ -45,9 +45,7 @@ var dom = function () {
 
     var interval = void 0;
 
-    var changeColor = function changeColor(numberOfCells) {
-        var speed = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 50;
-
+    var changeColor = function changeColor(numberOfCells, speed) {
         interval = setInterval(function () {
             var box = getElement('box', Math.floor(Math.random() * numberOfCells));
             setBackgroundColor(box, getRandomColor());
@@ -132,7 +130,7 @@ var gap = {
         type: 'range',
         min: 1,
         max: 100,
-        value: 10
+        value: 1
     },
     cssStyleRule: 2
 };
@@ -158,7 +156,7 @@ var speed = {
         type: 'range',
         min: 1,
         max: 100,
-        value: 10
+        value: 50
     }
 };
 
@@ -189,7 +187,7 @@ var slider = function slider(obj) {
 
     if (obj.classname === 'cells') {
         sliderInput.addEventListener('input', function () {
-
+            showValue.textContent = 'value: ' + this.value;
             var sliderSpeed = dom.getElement('settings__container__speed__input', 0);
             dom.clearInterval();
             dom.removeAllChildren(container);
@@ -198,8 +196,8 @@ var slider = function slider(obj) {
         });
     } else if (obj.classname === 'speed') {
         sliderInput.addEventListener('input', function () {
+            showValue.textContent = 'value: ' + this.value;
             var sliderCells = dom.getElement('settings__container__cells__input', 0);
-            console.log(sliderCells.value);
             dom.clearInterval();
             dom.changeColor(sliderCells.value, this.value);
         });
@@ -216,7 +214,7 @@ var slider = function slider(obj) {
                     cssValue = this.value + 'px ' + this.value + 'px';
                     break;
                 case 'borderRadius':
-                    cssValue = this.value + '%';
+                    cssValue = this.value / 2 + '%';
                     break;
             }
             document.styleSheets[0].rules[obj.cssStyleRule].style[obj.classname] = cssValue;
@@ -224,9 +222,10 @@ var slider = function slider(obj) {
     }
 };
 
-var initialCells = 50;
+var initialCells = 50,
+    initialSpeed = 50;
 createBox(initialCells);
-dom.changeColor(container.children.length, initialCells);
+dom.changeColor(container.children.length, initialSpeed);
 
 slider(transition);
 slider(cells);
