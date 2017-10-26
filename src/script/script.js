@@ -37,15 +37,18 @@ let dom = function () {
         }
     };
 
-    let changeColor = (numberOfCells) => {
-        setInterval(() => {
+    let interval;
+
+    let changeColor = (numberOfCells, speed = 50) => {
+        interval = setInterval(() => {
             let box = getElement('box', Math.floor(Math.random() * numberOfCells));
-            console.log(`children: ${numberOfCells}`);
-            console.log(Math.floor(Math.random() * numberOfCells))
             setBackgroundColor(box, getRandomColor());
-        }, 1000);
+        }, speed);
     };
 
+    let clearInterval = () => {
+        window.clearInterval(interval);
+    };
 
     return {
         createElement: createElement,
@@ -54,6 +57,7 @@ let dom = function () {
         append: append,
         getElement: getElement,
         changeColor: changeColor,
+        clearInterval: clearInterval,
         removeAllChildren: removeAllChildren
     }
 }();
@@ -62,23 +66,16 @@ let container = function () {
     let container = dom.createElement('div');
     dom.setClass(container, 'container');
     dom.append(document.body, container);
-
     return container;
 }();
 
-
-
 let createBox = (numberOfBoxes) => {
-
     for (let i = 0; i < numberOfBoxes; i++) {
         let box = dom.createElement('div');
         dom.setClass(box, 'box');
         dom.append(container, box);
     }
 };
-
-createBox(2);
-dom.changeColor(container.children.length);
 
 let settings = function () {
     // Create Setting Div //
@@ -95,143 +92,138 @@ let settings = function () {
 }();
 
 
+let transition = {
+    classname: 'transition',
+    title: 'transition',
+    attrs: {
+        class: 'settings__container__transition__input',
+        type: 'range',
+        min: 1,
+        max: 100,
+        value: 1
+    },
+    cssStyleRule: 3
+};
 
+let cells = {
+    classname: 'cells',
+    title: 'number of cells',
+    attrs: {
+        class: 'settings__container__cells__input',
+        type: 'range',
+        min: 1,
+        max: 150,
+        value: 50
+    }
+};
 
+let gap = {
+    classname: 'gridGap',
+    title: 'distance',
+    attrs: {
+        class: 'settings__container__gridGap__input',
+        type: 'range',
+        min: 1,
+        max: 100,
+        value: 10
+    },
+    cssStyleRule: 2
+};
 
+let radius = {
+    classname: 'borderRadius',
+    title: 'Radius',
+    attrs: {
+        class: 'settings__container__borderRadius__input',
+        type: 'range',
+        min: 1,
+        max: 100,
+        value: 10
+    },
+    cssStyleRule: 3
+};
+
+let speed = {
+    classname: 'speed',
+    title: 'Speed',
+    attrs: {
+        class: 'settings__container__speed__input',
+        type: 'range',
+        min: 1,
+        max: 100,
+        value: 10
+    }
+};
 
 
 // SLIDER //
-let slider = function () {
+let slider = function (obj) {
 
     // create slider-container-div //
     let slider = dom.createElement('div');
-    dom.setClass(slider, 'settings__container__slider');
+    dom.setClass(slider, `settings__container__${obj.classname}`);
     dom.append(settings, slider);
 
     // create slider-title //
-    let createSliderTitle = () => {
-        let sliderTitle = dom.createElement('h2');
-        sliderTitle.textContent = "Transition";
-        dom.setClass(sliderTitle, 'settings__container__slider__title')
-        dom.append(slider, sliderTitle);
-    };
+    let sliderTitle = dom.createElement('h2');
+    sliderTitle.textContent = obj.title;
+    dom.setClass(sliderTitle, `settings__container__${obj.classname}__title`);
+    dom.append(slider, sliderTitle);
 
     // create slider-input //
-    let createSliderInput = () => {
-        let sliderInput = dom.createElement('input');
-        let sliderAttrs = {
-            class: 'settings__container__slider__input',
-            type: 'range',
-            min: 1,
-            max: 100,
-            value: 10
-        };
-        dom.setAttributes(sliderInput, sliderAttrs);
-        dom.append(slider, sliderInput);
-    };
+    let sliderInput = dom.createElement('input');
+    dom.setAttributes(sliderInput, obj.attrs);
+    dom.append(slider, sliderInput);
 
     // show current value //
-    let showValue = () => {
+    let showValue = dom.createElement('p');
+    showValue.textContent = `value: ${sliderInput.value}`;
+    dom.setClass(showValue, `settings__container__${obj.classname}__value`);
+    dom.append(slider, showValue);
 
-        let sliderInput = dom.getElement('settings__container__slider__input', 0);
+    if (obj.classname === 'cells') {
+        sliderInput.addEventListener('input', function () {
 
-        let showValue = dom.createElement('p');
-        showValue.textContent = `value: ${sliderInput.value}`;
-
-
-        dom.setClass(showValue, 'settings__container__slider__value');
-        dom.append(slider, showValue);
-
-
+            let sliderSpeed = dom.getElement('settings__container__speed__input', 0);
+            dom.clearInterval();
+            dom.removeAllChildren(container);
+            createBox(this.value);
+            dom.changeColor(this.value, sliderSpeed.value);
+        });
+    } else if (obj.classname === 'speed') {
+        sliderInput.addEventListener('input', function () {
+            let sliderCells = dom.getElement('settings__container__cells__input', 0);
+            console.log(sliderCells.value)
+            dom.clearInterval();
+            dom.changeColor(sliderCells.value, this.value);
+        });
+    } else {
         sliderInput.addEventListener('input', function () {
             showValue.textContent = `value: ${this.value}`;
-            document.styleSheets[0].rules[1].style.transition = `all ${this.value / 100}s`;
+
+            let cssValue;
+            switch (obj.classname) {
+                case 'transition':
+                    cssValue = `all ${this.value / 100}s`;
+                    break;
+                case 'gridGap':
+                    cssValue = `${this.value}px ${this.value}px`;
+                    break;
+                case 'borderRadius':
+                    cssValue = `${this.value}%`;
+                    break;
+            }
+            document.styleSheets[0].rules[obj.cssStyleRule].style[obj.classname] = cssValue;
         });
     }
+};
 
-    return {
-        createSliderTitle: createSliderTitle,
-        createSliderInput: createSliderInput,
-        showValue: showValue
-    }
-}();
+let initialCells = 50;
+createBox(initialCells);
+dom.changeColor(container.children.length, initialCells);
 
-slider.createSliderTitle();
-slider.createSliderInput();
-slider.showValue();
-
-
-// CREATE INPUT FOR NUMBER OF CELLS //
-let numberOfCells = function () {
-
-    // create input-cell-container-div //
-    let cell = dom.createElement('div');
-    dom.setClass(cell, 'settings__container__cell');
-    dom.append(settings, cell);
-
-    // create input-cell-title //
-    let createCellTitle = () => {
-        let cellTitle = dom.createElement('h2');
-        cellTitle.textContent = "Number of Cells";
-        dom.setClass(cellTitle, 'settings__container__cell__title')
-        dom.append(cell, cellTitle);
-    };
-
-    // create input-cell-input //
-    let createCellInput = () => {
-        let cellInput = dom.createElement('input');
-        let cellInputAttrs = {
-            class: 'settings__container__cell__input',
-            value: 50
-        };
-        dom.setAttributes(cellInput, cellInputAttrs);
-        dom.append(cell, cellInput);
-    };
-
-    let createSubmitButton = () => {
-        let cellButton = dom.createElement('input');
-        let cellButtonAttrs = {
-            class: 'settings__container__cell__submit',
-            value: 'Set Value',
-            type: 'submit'
-        };
-        dom.setAttributes(cellButton, cellButtonAttrs);
-        dom.append(cell, cellButton);
-
-
-    }
-
-    let setNumberOfCells = () => {
-
-        let cellInput = dom.getElement('settings__container__cell__input', 0),
-            cellButton = dom.getElement('settings__container__cell__submit', 0);
-
-        cellButton.addEventListener('click', () => {
-            dom.removeAllChildren(container);
-            createBox(cellInput.value);
-            dom.changeColor(cellInput.value);
-        });
-
-    }
-
-
-
-    return {
-        createCellTitle: createCellTitle,
-        createCellInput: createCellInput,
-        createSubmitButton: createSubmitButton,
-        setNumberOfCells: setNumberOfCells
-    }
-}();
-
-numberOfCells.createCellTitle();
-numberOfCells.createCellInput();
-numberOfCells.createSubmitButton();
-numberOfCells.setNumberOfCells();
-
-
-//to do list//
-// decide how many cells there will be 
-// change grid gap
-// change speed
-// change border radius
+slider(transition);
+slider(cells);
+slider(gap);
+slider(radius);
+slider(speed);

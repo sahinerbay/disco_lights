@@ -43,13 +43,19 @@ var dom = function () {
         }
     };
 
+    var interval = void 0;
+
     var changeColor = function changeColor(numberOfCells) {
-        setInterval(function () {
+        var speed = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 50;
+
+        interval = setInterval(function () {
             var box = getElement('box', Math.floor(Math.random() * numberOfCells));
-            console.log('children: ' + numberOfCells);
-            console.log(Math.floor(Math.random() * numberOfCells));
             setBackgroundColor(box, getRandomColor());
-        }, 1000);
+        }, speed);
+    };
+
+    var clearInterval = function clearInterval() {
+        window.clearInterval(interval);
     };
 
     return {
@@ -59,6 +65,7 @@ var dom = function () {
         append: append,
         getElement: getElement,
         changeColor: changeColor,
+        clearInterval: clearInterval,
         removeAllChildren: removeAllChildren
     };
 }();
@@ -67,21 +74,16 @@ var container = function () {
     var container = dom.createElement('div');
     dom.setClass(container, 'container');
     dom.append(document.body, container);
-
     return container;
 }();
 
 var createBox = function createBox(numberOfBoxes) {
-
     for (var i = 0; i < numberOfBoxes; i++) {
         var box = dom.createElement('div');
         dom.setClass(box, 'box');
         dom.append(container, box);
     }
 };
-
-createBox(2);
-dom.changeColor(container.children.length);
 
 var settings = function () {
     // Create Setting Div //
@@ -97,129 +99,137 @@ var settings = function () {
     return settingsContainer;
 }();
 
+var transition = {
+    classname: 'transition',
+    title: 'transition',
+    attrs: {
+        class: 'settings__container__transition__input',
+        type: 'range',
+        min: 1,
+        max: 100,
+        value: 1
+    },
+    cssStyleRule: 3
+};
+
+var cells = {
+    classname: 'cells',
+    title: 'number of cells',
+    attrs: {
+        class: 'settings__container__cells__input',
+        type: 'range',
+        min: 1,
+        max: 150,
+        value: 50
+    }
+};
+
+var gap = {
+    classname: 'gridGap',
+    title: 'distance',
+    attrs: {
+        class: 'settings__container__gridGap__input',
+        type: 'range',
+        min: 1,
+        max: 100,
+        value: 10
+    },
+    cssStyleRule: 2
+};
+
+var radius = {
+    classname: 'borderRadius',
+    title: 'Radius',
+    attrs: {
+        class: 'settings__container__borderRadius__input',
+        type: 'range',
+        min: 1,
+        max: 100,
+        value: 10
+    },
+    cssStyleRule: 3
+};
+
+var speed = {
+    classname: 'speed',
+    title: 'Speed',
+    attrs: {
+        class: 'settings__container__speed__input',
+        type: 'range',
+        min: 1,
+        max: 100,
+        value: 10
+    }
+};
+
 // SLIDER //
-var slider = function () {
+var slider = function slider(obj) {
 
     // create slider-container-div //
     var slider = dom.createElement('div');
-    dom.setClass(slider, 'settings__container__slider');
+    dom.setClass(slider, 'settings__container__' + obj.classname);
     dom.append(settings, slider);
 
     // create slider-title //
-    var createSliderTitle = function createSliderTitle() {
-        var sliderTitle = dom.createElement('h2');
-        sliderTitle.textContent = "Transition";
-        dom.setClass(sliderTitle, 'settings__container__slider__title');
-        dom.append(slider, sliderTitle);
-    };
+    var sliderTitle = dom.createElement('h2');
+    sliderTitle.textContent = obj.title;
+    dom.setClass(sliderTitle, 'settings__container__' + obj.classname + '__title');
+    dom.append(slider, sliderTitle);
 
     // create slider-input //
-    var createSliderInput = function createSliderInput() {
-        var sliderInput = dom.createElement('input');
-        var sliderAttrs = {
-            class: 'settings__container__slider__input',
-            type: 'range',
-            min: 1,
-            max: 100,
-            value: 10
-        };
-        dom.setAttributes(sliderInput, sliderAttrs);
-        dom.append(slider, sliderInput);
-    };
+    var sliderInput = dom.createElement('input');
+    dom.setAttributes(sliderInput, obj.attrs);
+    dom.append(slider, sliderInput);
 
     // show current value //
-    var showValue = function showValue() {
+    var showValue = dom.createElement('p');
+    showValue.textContent = 'value: ' + sliderInput.value;
+    dom.setClass(showValue, 'settings__container__' + obj.classname + '__value');
+    dom.append(slider, showValue);
 
-        var sliderInput = dom.getElement('settings__container__slider__input', 0);
+    if (obj.classname === 'cells') {
+        sliderInput.addEventListener('input', function () {
 
-        var showValue = dom.createElement('p');
-        showValue.textContent = 'value: ' + sliderInput.value;
-
-        dom.setClass(showValue, 'settings__container__slider__value');
-        dom.append(slider, showValue);
-
+            var sliderSpeed = dom.getElement('settings__container__speed__input', 0);
+            dom.clearInterval();
+            dom.removeAllChildren(container);
+            createBox(this.value);
+            dom.changeColor(this.value, sliderSpeed.value);
+        });
+    } else if (obj.classname === 'speed') {
+        sliderInput.addEventListener('input', function () {
+            var sliderCells = dom.getElement('settings__container__cells__input', 0);
+            console.log(sliderCells.value);
+            dom.clearInterval();
+            dom.changeColor(sliderCells.value, this.value);
+        });
+    } else {
         sliderInput.addEventListener('input', function () {
             showValue.textContent = 'value: ' + this.value;
-            document.styleSheets[0].rules[1].style.transition = 'all ' + this.value / 100 + 's';
+
+            var cssValue = void 0;
+            switch (obj.classname) {
+                case 'transition':
+                    cssValue = 'all ' + this.value / 100 + 's';
+                    break;
+                case 'gridGap':
+                    cssValue = this.value + 'px ' + this.value + 'px';
+                    break;
+                case 'borderRadius':
+                    cssValue = this.value + '%';
+                    break;
+            }
+            document.styleSheets[0].rules[obj.cssStyleRule].style[obj.classname] = cssValue;
         });
-    };
+    }
+};
 
-    return {
-        createSliderTitle: createSliderTitle,
-        createSliderInput: createSliderInput,
-        showValue: showValue
-    };
-}();
+var initialCells = 50;
+createBox(initialCells);
+dom.changeColor(container.children.length, initialCells);
 
-slider.createSliderTitle();
-slider.createSliderInput();
-slider.showValue();
-
-// CREATE INPUT FOR NUMBER OF CELLS //
-var numberOfCells = function () {
-
-    // create input-cell-container-div //
-    var cell = dom.createElement('div');
-    dom.setClass(cell, 'settings__container__cell');
-    dom.append(settings, cell);
-
-    // create input-cell-title //
-    var createCellTitle = function createCellTitle() {
-        var cellTitle = dom.createElement('h2');
-        cellTitle.textContent = "Number of Cells";
-        dom.setClass(cellTitle, 'settings__container__cell__title');
-        dom.append(cell, cellTitle);
-    };
-
-    // create input-cell-input //
-    var createCellInput = function createCellInput() {
-        var cellInput = dom.createElement('input');
-        var cellInputAttrs = {
-            class: 'settings__container__cell__input',
-            value: 50
-        };
-        dom.setAttributes(cellInput, cellInputAttrs);
-        dom.append(cell, cellInput);
-    };
-
-    var createSubmitButton = function createSubmitButton() {
-        var cellButton = dom.createElement('input');
-        var cellButtonAttrs = {
-            class: 'settings__container__cell__submit',
-            value: 'Set Value',
-            type: 'submit'
-        };
-        dom.setAttributes(cellButton, cellButtonAttrs);
-        dom.append(cell, cellButton);
-    };
-
-    var setNumberOfCells = function setNumberOfCells() {
-
-        var cellInput = dom.getElement('settings__container__cell__input', 0),
-            cellButton = dom.getElement('settings__container__cell__submit', 0);
-
-        cellButton.addEventListener('click', function () {
-            dom.removeAllChildren(container);
-            createBox(cellInput.value);
-            dom.changeColor(cellInput.value);
-        });
-    };
-
-    return {
-        createCellTitle: createCellTitle,
-        createCellInput: createCellInput,
-        createSubmitButton: createSubmitButton,
-        setNumberOfCells: setNumberOfCells
-    };
-}();
-
-numberOfCells.createCellTitle();
-numberOfCells.createCellInput();
-numberOfCells.createSubmitButton();
-numberOfCells.setNumberOfCells();
-
-//to do list//
-// decide how many cells there will be 
-// change grid gap
-// change speed
-// change border radius
+slider(transition);
+slider(cells);
+slider(gap);
+slider(radius);
+slider(speed);
