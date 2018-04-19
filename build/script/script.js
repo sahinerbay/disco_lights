@@ -7,7 +7,11 @@ var dom = function () {
     };
 
     var setClass = function setClass(el, name) {
-        el.className = name;
+        return el.className = name;
+    };
+
+    var toggleClassName = function toggleClassName(el, name) {
+        return el.classList.toggle(name);
     };
 
     var setAttributes = function setAttributes(el, attrs) {
@@ -17,11 +21,11 @@ var dom = function () {
     };
 
     var setBackgroundColor = function setBackgroundColor(el, color) {
-        el.style.background = color;
+        return el.style.background = color;
     };
 
     var append = function append(parent, child) {
-        parent.appendChild(child);
+        return parent.appendChild(child);
     };
 
     var getElement = function getElement(classname, nth) {
@@ -31,8 +35,10 @@ var dom = function () {
     var getRandomColor = function getRandomColor() {
         var letters = '0123456789ABCDEF';
         var color = '#';
-        for (var i = 0; i < 6; i++) {
+        var i = 0;
+        while (i < 6) {
             color += letters[Math.floor(Math.random() * 16)];
+            i++;
         }
         return color;
     };
@@ -53,12 +59,13 @@ var dom = function () {
     };
 
     var clearInterval = function clearInterval() {
-        window.clearInterval(interval);
+        return window.clearInterval(interval);
     };
 
     return {
         createElement: createElement,
         setClass: setClass,
+        toggleClassName: toggleClassName,
         setAttributes: setAttributes,
         append: append,
         getElement: getElement,
@@ -78,10 +85,12 @@ var create = function () {
 
     var cells = function cells(numberOfBoxes) {
         var container = dom.getElement('container', 0);
-        for (var i = 0; i < numberOfBoxes; i++) {
+        var i = 0;
+        while (i < numberOfBoxes) {
             var box = dom.createElement('div');
             dom.setClass(box, 'box');
             dom.append(container, box);
+            i++;
         }
     };
 
@@ -161,6 +170,30 @@ var create = function () {
         }
     };
 
+    var addShowButton = function addShowButton() {
+        var btnContainer = dom.createElement('div'),
+            showBtn = dom.createElement('span');
+
+        dom.setClass(showBtn, 'btn-show');
+        dom.setClass(btnContainer, 'settings settings-show');
+
+        var txtNode = document.createTextNode('show settings');
+
+        dom.append(showBtn, txtNode);
+        dom.append(btnContainer, showBtn);
+        dom.append(document.body, btnContainer);
+
+        showBtn.addEventListener('click', function () {
+            var settings = dom.getElement('settings', 0);
+
+            var content = showBtn.textContent;
+            showBtn.textContent = (content.search(/show/i) === -1 ? 'show' : 'hide') + ' settings';
+
+            dom.toggleClassName(settings, 'settings-hidden');
+            dom.toggleClassName(btnContainer, 'btnContainer-hidden');
+        });
+    };
+
     var allSliders = function allSliders(obj) {
         for (var property in obj) {
             slider(obj[property]);
@@ -171,7 +204,8 @@ var create = function () {
         container: container,
         cells: cells,
         settingsBar: settingsBar,
-        allSliders: allSliders
+        allSliders: allSliders,
+        addShowButton: addShowButton
     };
 }();
 
@@ -246,3 +280,4 @@ create.settingsBar();
 dom.changeColor(initialCells, initialSpeed);
 
 create.allSliders(settings);
+create.addShowButton();

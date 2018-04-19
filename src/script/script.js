@@ -2,9 +2,9 @@ let dom = function () {
 
     let createElement = (el) => document.createElement(el);
 
-    let setClass = (el, name) => {
-        el.className = name;
-    };
+    let setClass = (el, name) => el.className = name;
+
+    let toggleClassName = (el, name) => el.classList.toggle(name);
 
     let setAttributes = (el, attrs) => {
         for (let key in attrs) {
@@ -12,21 +12,19 @@ let dom = function () {
         }
     };
 
-    let setBackgroundColor = (el, color) => {
-        el.style.background = color;
-    };
+    let setBackgroundColor = (el, color) => el.style.background = color;
 
-    let append = (parent, child) => {
-        parent.appendChild(child);
-    };
+    let append = (parent, child) => parent.appendChild(child);
 
     let getElement = (classname, nth) => document.querySelectorAll(`.${classname}`)[nth];
 
     let getRandomColor = () => {
         let letters = '0123456789ABCDEF';
         let color = '#';
-        for (let i = 0; i < 6; i++) {
+        let i = 0;
+        while (i < 6) {
             color += letters[Math.floor(Math.random() * 16)];
+            i++;
         }
         return color;
     };
@@ -46,25 +44,24 @@ let dom = function () {
         }, speed);
     };
 
-    let clearInterval = () => {
-        window.clearInterval(interval);
-    };
+    let clearInterval = () => window.clearInterval(interval);
 
     return {
-        createElement: createElement,
-        setClass: setClass,
-        setAttributes: setAttributes,
-        append: append,
-        getElement: getElement,
-        changeColor: changeColor,
-        clearInterval: clearInterval,
-        removeAllChildren: removeAllChildren
+        createElement,
+        setClass,
+        toggleClassName,
+        setAttributes,
+        append,
+        getElement,
+        changeColor,
+        clearInterval,
+        removeAllChildren
     }
 }();
 
 let create = function () {
 
-    let container = function () {
+    let container = () => {
         let container = dom.createElement('div');
         dom.setClass(container, 'container');
         dom.append(document.body, container);
@@ -72,14 +69,16 @@ let create = function () {
 
     let cells = (numberOfBoxes) => {
         let container = dom.getElement('container', 0);
-        for (let i = 0; i < numberOfBoxes; i++) {
+        let i = 0;
+        while (i < numberOfBoxes) {
             let box = dom.createElement('div');
             dom.setClass(box, 'box');
             dom.append(container, box);
+            i++
         }
     };
 
-    let settingsBar = function () {
+    let settingsBar = () => {
         // Create Setting Div //
         let settings = dom.createElement('div');
         dom.setClass(settings, 'settings');
@@ -91,7 +90,7 @@ let create = function () {
         dom.append(settings, settingsContainer);
     };
 
-    let slider = function (obj) {
+    let slider = obj => {
 
         // create slider-container-div //
         let slider = dom.createElement('div'),
@@ -155,17 +154,42 @@ let create = function () {
         }
     };
 
+    let addShowButton = () => {
+        let btnContainer = dom.createElement('div'),
+            showBtn = dom.createElement('span');
+
+        dom.setClass(showBtn, 'btn-show');
+        dom.setClass(btnContainer, 'settings settings-show');
+
+        let txtNode = document.createTextNode('show settings');
+
+        dom.append(showBtn, txtNode);
+        dom.append(btnContainer, showBtn);
+        dom.append(document.body, btnContainer);
+
+        showBtn.addEventListener('click', () => {
+            let settings = dom.getElement('settings', 0);
+
+            let content = showBtn.textContent;
+            showBtn.textContent = (content.search(/show/i) === -1 ? 'show' : 'hide') + ' settings';
+            
+            dom.toggleClassName(settings, 'settings-hidden');
+            dom.toggleClassName(btnContainer, 'btnContainer-hidden')
+        })
+    }
+
     let allSliders = (obj) => {
-        for(let property in obj) {
+        for (let property in obj) {
             slider(obj[property]);
         }
     };
 
     return {
-        container: container,
-        cells: cells,
-        settingsBar: settingsBar,
-        allSliders: allSliders
+        container,
+        cells,
+        settingsBar,
+        allSliders,
+        addShowButton
     }
 }();
 
@@ -240,3 +264,4 @@ create.settingsBar();
 dom.changeColor(initialCells, initialSpeed);
 
 create.allSliders(settings);
+create.addShowButton();
