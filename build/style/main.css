@@ -53,6 +53,7 @@ body:before {
 
 .settings-hidden {
     opacity: 0;
+    visibility: hidden;
 }
 
 .settings__container {

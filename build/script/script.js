@@ -183,12 +183,12 @@ var create = function () {
         dom.append(btnContainer, showBtn);
         dom.append(document.body, btnContainer);
 
-        showBtn.addEventListener('click', function () {
-            var settings = dom.getElement('settings', 0);
+        var settings = dom.getElement('settings', 0);
+        settings.classList.add('settings-hidden');
 
+        showBtn.addEventListener('click', function () {
             var content = showBtn.textContent;
             showBtn.textContent = (content.search(/show/i) === -1 ? 'show' : 'hide') + ' settings';
-
             dom.toggleClassName(settings, 'settings-hidden');
             dom.toggleClassName(btnContainer, 'btnContainer-hidden');
         });
@@ -198,6 +198,14 @@ var create = function () {
         for (var property in obj) {
             slider(obj[property]);
         }
+        showColor();
+    };
+
+    var showColor = function showColor() {
+        var container = dom.getElement('container', 0);
+        container.addEventListener('click', function (e) {
+            console.log(e.target.style.backgroundColor);
+        });
     };
 
     return {
